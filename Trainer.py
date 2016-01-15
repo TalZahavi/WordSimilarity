@@ -2,6 +2,7 @@ import pickle
 from nltk.stem import WordNetLemmatizer
 import string
 from collections import Counter
+import csv
 
 
 class Trainer:
@@ -10,6 +11,18 @@ class Trainer:
     def __init__(self):
         self.wordnet_lemmatizer = WordNetLemmatizer()
         self.context_words = dict()
+        self.words = set()
+
+    # Need to run this only one time - to get the words from the CSV files
+    def get_words_from_csv(self, file_name):
+        with open(file_name, 'rb') as f:
+            reader = csv.reader(f, delimiter=',')
+            row_num = 1
+            for row in reader:
+                if row_num != 1:
+                    self.words.add(self.wordnet_lemmatizer.lemmatize(row[0].lower()))
+                    self.words.add(self.wordnet_lemmatizer.lemmatize(row[1].lower()))
+                row_num += 1
 
     # Pre process the data, and get the "limit" most frequent words
     def pre_process(self):
@@ -52,9 +65,7 @@ class Trainer:
         # Get the most limit words
         common_words = Counter(word_freq).most_common(self.CONTEXT_LIMIT)
         pickle.dump(common_words, open("Results\\context.p", "wb"), protocol=2)
-        print(common_words)
 
 
 trainer = Trainer()
-trainer.pre_process()
 
