@@ -46,13 +46,12 @@ class Trainer:
                     else:
                         word_freq[processed_word] = 1
 
-                print('Done pre processing ' + str((float(sentence_number)/float(880836260))*100) + '%')
-                if sentence_number == 10000:
-                    break
+                print('Done pre processing ' + str((float(sentence_number)/float(88083626))*100) + '%')
 
         f.close()
         # Get the most limit words
-        common_words = Counter(word_freq).most_common(30)
+        common_words = Counter(word_freq).most_common(self.CONTEXT_LIMIT)
+        pickle.dump(common_words, open("Results\\context.p", "wb"), protocol=2)
         print(common_words)
 
 
