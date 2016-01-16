@@ -3,6 +3,7 @@ from nltk.stem import WordNetLemmatizer
 import string
 from collections import Counter
 import csv
+import math
 
 
 class Trainer:
@@ -132,6 +133,59 @@ class Trainer:
                 print('Done ' + str((float(sentence_number)/float(88083626))*100) + '% of the corpus')
         pickle.dump(self.freq1_matrix, open("Results\\freq1.p", "wb"), protocol=2)
         pickle.dump(self.freq2_matrix, open("Results\\freq2.p", "wb"), protocol=2)
+
+    def calculate_ppmi(self, matrix_name, matrix_output_name):
+        # First we need to add 2 to ALL matrix elements (including zero elements)
+        print('Wait a few seconds for data loading...')
+        freq_dict = pickle.load(open(matrix_name, "rb"))
+        context_words = dict(pickle.load(open("Results\\context.p", "rb")))
+        print('Done loading data - starting to calculate')
+        for word in freq_dict:
+            for context in context_words:
+                if context in freq_dict[word]:
+                    freq_dict[word][context] += 2
+                else:
+                    freq_dict[word][context] = 2
+
+        # Count the total
+        total = 0
+        for word in freq_dict:
+            for context in freq_dict[word]:
+                total += freq_dict[word][context]
+
+        # Calculate the probability of each element in the matrix
+        for word in freq_dict:
+            for context in freq_dict[word]:
+                freq_dict[word][context] = (float(freq_dict[word][context])/float(total))
+
+        p_word = dict()
+        p_context = dict()
+
+        # Calculate the sum probability of each of the word\context words
+        # Words part
+        for word in freq_dict:
+            temp_sum = 0
+            for context in freq_dict[word]:
+                temp_sum += freq_dict[word][context]
+            p_word[word] = temp_sum
+        # Context part
+        for context in context_words:
+            temp_sum = 0
+            for word in freq_dict:
+                temp_sum += freq_dict[word][context]
+            p_context[context] = temp_sum
+
+        # Finally, calculate the PPMI
+        for word in freq_dict:
+            for context in freq_dict[word]:
+                temp = math.log(float(freq_dict[word][context])/float(p_word[word]*p_context[context]), 2)
+                if temp < 0:
+                    freq_dict[word][context] = 0
+                else:
+                    freq_dict[word][context] = temp
+
+        pickle.dump(freq_dict, open(matrix_output_name, "wb"), protocol=2)
+
 
 
 trainer = Trainer()
