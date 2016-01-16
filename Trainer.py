@@ -26,7 +26,7 @@ class Trainer:
                     self.words.add(self.wordnet_lemmatizer.lemmatize(row[1].lower()))
                 row_num += 1
 
-    #TODO: PUT ALSO IN PREPROCESSING!
+    # TODO: PUT ALSO IN PRE PROCESSING!
     # Replacing numbers with special chars, un capital words and lemmatization
     def word_processing(self, word):
         if word.isdigit():
@@ -98,6 +98,8 @@ class Trainer:
 
     def make_freq_matrix(self):
         sentence_number = 0
+        self.words = pickle.load(open("Results\\words.p", "rb"))
+        self.context_words = dict(pickle.load(open("Results\\context.p", "rb")))
         with open('Data\\en\\full.txt', 'r') as f:
             for line in f:
                 sentence_number += 1
@@ -133,5 +135,4 @@ class Trainer:
 
 
 trainer = Trainer()
-trainer.make_freq_matrix()
 
